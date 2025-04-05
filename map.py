@@ -1,6 +1,7 @@
 from torchvision.ops import box_iou
 import numpy as np
 import torch
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 def compute_map(all_preds, all_gts, iou_threshold=0.5):
     """
@@ -125,3 +126,9 @@ def compute_map_new(all_preds, all_gts, iou_threshold=0.5, class_num = 11):
         ap = np.trapezoid(precision, recall)
         aps.append(ap)
     return np.mean(aps) if aps else 0.0
+
+def COCOmap(predictions, ground_truths):
+    metric = MeanAveragePrecision(iou_type="bbox")
+    metric.update(preds=predictions, target=ground_truths)
+    result = metric.compute()
+    return result['map']

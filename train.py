@@ -6,7 +6,7 @@ from torchvision.models.detection.faster_rcnn import FasterRCNN_ResNet50_FPN_V2_
 from tqdm import tqdm
 from Dataset import TrainDataset
 from torch.utils.data import Subset
-from map import compute_map_new
+from map import COCOmap
 import os
 
 def train_one_epoch(model, train_loader, optimizer, device):
@@ -35,7 +35,7 @@ def train_one_epoch(model, train_loader, optimizer, device):
 def validate(model, valid_loader, device):
     """ 驗證模型，計算 Validation mAP """
     model.eval()
-    all_preds, all_gts = [], [] # all_preds : list of list, all_gts : {image_id:{label:[box list]}}
+    all_preds, all_gts = [], []
 
     valid_pbar = tqdm(valid_loader, desc="Validation", leave=False)
     with torch.no_grad():
@@ -52,7 +52,7 @@ def validate(model, valid_loader, device):
                 
 
     # 計算 mAP
-    mAP = compute_map_new(all_preds, all_gts)
+    mAP = COCOmap(all_preds, all_gts)
 
     return mAP
 
