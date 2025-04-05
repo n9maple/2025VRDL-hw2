@@ -68,6 +68,7 @@ class TrainDataset(Dataset):
             image = self.transform(image)
 
         return image, target
+    
 
 class TestDataset(Dataset):
     def __init__(self, root="data/test", transform=None):
@@ -96,4 +97,4 @@ class TestDataset(Dataset):
         if self.transform:
             image = self.transform(image)
 
-        return image, self.image_files[idx]
+        return image, os.path.splitext(self.image_files[idx])[0]
