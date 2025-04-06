@@ -72,7 +72,6 @@ def main():
     parser.add_argument("--save_dir", type=str, default="save_model", help="The directory where the weight is saved")
     args = parser.parse_args()
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # 初始化模型
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn_v2(weights=FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT)
@@ -80,7 +79,7 @@ def main():
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
 
-    model.to(device)
+    model.to(args.device)
 
     # 加載數據集
     train_dataset = TrainDataset(args.train_root, args.train_annotation, transform=torchvision.transforms.ToTensor())
@@ -104,8 +103,8 @@ def main():
     for epoch in range(args.epochs):
         print(f"\nEpoch [{epoch+1}/{args.epochs}]")
 
-        train_loss = train_one_epoch(model, train_loader, optimizer, device)
-        mAP = validate(model, valid_loader, device)
+        train_loss = train_one_epoch(model, train_loader, optimizer, args.device)
+        mAP = validate(model, valid_loader, args.device)
 
         print(f"Train Loss: {train_loss:.4f} | mAP: {mAP:.4f}")
 
