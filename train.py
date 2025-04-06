@@ -6,7 +6,14 @@ from torchvision.models.detection.faster_rcnn import (
     FasterRCNN_ResNet50_FPN_V2_Weights,
     FastRCNNPredictor,
 )
-from tqdm import tqdm
+from rich import print
+from rich.progress import (
+    Progress,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+    BarColumn,
+    TextColumn,
+)
 from Dataset import TrainDataset
 from torch.utils.data import Subset
 from map import COCOmap
@@ -16,20 +23,27 @@ import os
 def train_one_epoch(model, train_loader, optimizer, device):
     model.train()
     total_train_loss = 0.0
-    train_pbar = tqdm(train_loader, desc="Training", leave=False)
+    with Progress(
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        "[progress.percentage]{task.percentage:>3.1f}%",
+        TimeElapsedColumn(),
+        TimeRemainingColumn(),
+    ) as progress:
+        task = progress.add_task("[green]Training...", total=len(train_loader))
 
-    for images, targets in train_pbar:
-        images = [img.to(device) for img in images]
-        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+        for images, targets in train_loader:
+            images = [img.to(device) for img in images]
+            targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
-        optimizer.zero_grad()
-        loss_dict = model(images, targets)
-        loss = sum(loss for loss in loss_dict.values())
-        loss.backward()
-        optimizer.step()
+            optimizer.zero_grad()
+            loss_dict = model(images, targets)
+            loss = sum(loss for loss in loss_dict.values())
+            loss.backward()
+            optimizer.step()
 
-        total_train_loss += loss.item()
-        train_pbar.set_postfix(loss=loss.item())
+            total_train_loss += loss.item()
+            progress.update(task, advance=1)
 
     avg_train_loss = total_train_loss / len(train_loader)
     return avg_train_loss
@@ -39,14 +53,23 @@ def validate(model, valid_loader, device):
     model.eval()
     all_preds, all_gts = [], []
 
-    valid_pbar = tqdm(valid_loader, desc="Validation", leave=False)
-    with torch.no_grad():
-        for images, targets in valid_pbar:
-            images = [img.to(device) for img in images]
-            targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-            preds = model(images)
-            all_preds.extend(single_img_pred for single_img_pred in preds)
-            all_gts.extend(single_img_gt for single_img_gt in targets)
+    with Progress(
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        "[progress.percentage]{task.percentage:>3.1f}%",
+        TimeElapsedColumn(),
+        TimeRemainingColumn(),
+    ) as progress:
+        task = progress.add_task("[cyan]Validation...", total=len(valid_loader))
+
+        with torch.no_grad():
+            for images, targets in valid_loader:
+                images = [img.to(device) for img in images]
+                targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+                preds = model(images)
+                all_preds.extend(single_img_pred for single_img_pred in preds)
+                all_gts.extend(single_img_gt for single_img_gt in targets)
+                progress.update(task, advance=1)
 
     mAP = COCOmap(all_preds, all_gts)
     return mAP
@@ -180,7 +203,7 @@ def main():
     )
     os.makedirs(args.save_dir, exist_ok=True)
     for epoch in range(args.epochs):
-        print(f"\nEpoch [{epoch+1}/{args.epochs}]")
+        print(f"\n[red]Epoch \[{epoch+1}/{args.epochs}\][/red]")
 
         train_loss = train_one_epoch(model, train_loader, optimizer, args.device)
         mAP = validate(model, valid_loader, args.device)

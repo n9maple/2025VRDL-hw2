@@ -7,7 +7,13 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import functional as F
 from Dataset import TestDataset
 from torch.utils.data import DataLoader
-from tqdm import tqdm
+from rich.progress import (
+    Progress,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+    BarColumn,
+    TextColumn,
+)
 
 
 def main():
@@ -70,31 +76,40 @@ def main():
 
     # inference
     with torch.no_grad():
-        for idx, (images, image_ids) in enumerate(tqdm(test_loader, desc="Inference")):
-            images = [img.to(args.device) for img in images]
-            outputs = model(images)
-            for image_id, output in zip(image_ids, outputs):
-                boxes = output["boxes"].cpu().numpy()
-                scores = output["scores"].cpu().numpy()
-                labels = output["labels"].cpu().numpy()
+        with Progress(
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            "[progress.percentage]{task.percentage:>3.1f}%",
+            TimeElapsedColumn(),
+            TimeRemainingColumn(),
+        ) as progress:
+            task = progress.add_task("[green]Prediction...", total=len(test_loader))
+            for images, image_ids in test_loader:
+                images = [img.to(args.device) for img in images]
+                outputs = model(images)
+                for image_id, output in zip(image_ids, outputs):
+                    boxes = output["boxes"].cpu().numpy()
+                    scores = output["scores"].cpu().numpy()
+                    labels = output["labels"].cpu().numpy()
 
-                for box, score, label in zip(boxes, scores, labels):
-                    x_min, y_min, x_max, y_max = box
-                    width = x_max - x_min
-                    height = y_max - y_min
-                    predictions.append(
-                        {
-                            "image_id": int(image_id),
-                            "bbox": [
-                                float(x_min),
-                                float(y_min),
-                                float(width),
-                                float(height),
-                            ],
-                            "score": float(score),
-                            "category_id": int(label),
-                        }
-                    )
+                    for box, score, label in zip(boxes, scores, labels):
+                        x_min, y_min, x_max, y_max = box
+                        width = x_max - x_min
+                        height = y_max - y_min
+                        predictions.append(
+                            {
+                                "image_id": int(image_id),
+                                "bbox": [
+                                    float(x_min),
+                                    float(y_min),
+                                    float(width),
+                                    float(height),
+                                ],
+                                "score": float(score),
+                                "category_id": int(label),
+                            }
+                        )
+                progress.update(task, advance=1)
 
     # save prediction
     with open(os.path.join(args.save_dir, "pred.json"), "w") as f:
