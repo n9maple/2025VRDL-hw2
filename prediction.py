@@ -19,28 +19,38 @@ from rich.progress import (
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--test_root", type=str, default="data/test", help="Path to the test images"
+        "-tr",
+        "--test_root",
+        type=str,
+        default="data/test",
+        help="Path to the test images",
     )
     parser.add_argument(
+        "-mp",
         "--model_path",
         type=str,
         default="save_model/epoch1.pth",
         help="Path to the saved model",
     )
-    parser.add_argument("--batch_size", type=int, default=4, help="Batch size for test")
     parser.add_argument(
+        "-bs", "--batch_size", type=int, default=4, help="Batch size for test"
+    )
+    parser.add_argument(
+        "-d",
         "--device",
         type=str,
         default="cuda" if torch.cuda.is_available() else "cpu",
         help="Device to use for test",
     )
     parser.add_argument(
+        "-nw",
         "--num_workers",
         type=int,
         default=4,
         help="Number of worker threads for DataLoader",
     )
     parser.add_argument(
+        "-sd",
         "--save_dir",
         type=str,
         default="save_result",

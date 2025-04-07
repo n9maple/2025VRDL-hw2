@@ -16,7 +16,7 @@ from rich.progress import (
 )
 from Dataset import TrainDataset
 from torch.utils.data import Subset
-from map import COCOmap
+from utils import COCOmap
 import os
 
 
@@ -78,59 +78,74 @@ def validate(model, valid_loader, device):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--train_root", type=str, default="data/train", help="Path to training images"
+        "-tr",
+        "--train_root",
+        type=str,
+        default="data/train",
+        help="Path to training images",
     )
     parser.add_argument(
+        "-ta",
         "--train_annotation",
         type=str,
         default="data/train.json",
         help="Path to COCO format training annotation file",
     )
     parser.add_argument(
-        "--valid_root", type=str, default="data/valid", help="Path to validation images"
+        "-vr",
+        "--valid_root",
+        type=str,
+        default="data/valid",
+        help="Path to validation images",
     )
     parser.add_argument(
+        "-va",
         "--valid_annotation",
         type=str,
         default="data/valid.json",
         help="Path to COCO format validation annotation file",
     )
     parser.add_argument(
-        "--batch_size", type=int, default=4, help="Batch size for training"
+        "-bs", "--batch_size", type=int, default=4, help="Batch size for training"
     )
-    parser.add_argument("--lr", type=float, default=0.005, help="Learning rate")
+    parser.add_argument("-l", "--lr", type=float, default=0.005, help="Learning rate")
     parser.add_argument(
-        "--epochs", type=int, default=10, help="Number of training epochs"
+        "-e", "--epochs", type=int, default=10, help="Number of training epochs"
     )
     parser.add_argument(
+        "-d",
         "--device",
         type=str,
         default="cuda" if torch.cuda.is_available() else "cpu",
         help="Device to use for training",
     )
     parser.add_argument(
+        "-w",
         "--num_workers",
         type=int,
         default=4,
         help="Number of worker threads for DataLoader",
     )
     parser.add_argument(
+        "-s",
         "--save_dir",
         type=str,
         default="save_model",
         help="The directory where the weight is saved",
     )
     parser.add_argument(
+        "-pt",
         "--partial_training_data",
         type=float,
         default=-1,
-        help="The ratio of training data to be used. If the ratio is not between 0 and 1, all the data will be used to train",
+        help="Ratio of training data to be used (0~1); if out of range, use all data",
     )
     parser.add_argument(
+        "-pv",
         "--partial_validation_data",
         type=float,
         default=-1,
-        help="The ratio of validation data to be used. If the ratio is not between 0 and 1, all the data will be used to validate",
+        help="Ratio of validation data to be used (0~1); if out of range, use all data",
     )
     args = parser.parse_args()
 

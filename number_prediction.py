@@ -13,24 +13,28 @@ from rich.progress import (
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        "-b",
         "--box_pred_path",
         type=str,
         default="save_result/pred.json",
         help="Path to the box prediction json file",
     )
     parser.add_argument(
+        "-sp",
         "--save_path",
         type=str,
         default="save_result/pred.csv",
         help="Path to the saved result",
     )
     parser.add_argument(
+        "-st",
         "--score_thre",
         type=float,
         default=0.8,
         help="The score threshold to pick the box",
     )
     args = parser.parse_args()
+
     num_pred(args.box_pred_path, args.save_path, args.score_thre)
 
 
