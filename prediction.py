@@ -32,7 +32,7 @@ def main():
         "-mp",
         "--model_path",
         type=str,
-        default="save_model/epoch1.pth",
+        default="save_model/epoch10.pth",
         help="Path to the saved model",
     )
     parser.add_argument(
