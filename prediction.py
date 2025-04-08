@@ -5,8 +5,8 @@ import argparse
 import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import functional as F
-from Dataset import TestDataset
 from torch.utils.data import DataLoader
+from rich import print
 from rich.progress import (
     Progress,
     TimeElapsedColumn,
@@ -14,6 +14,9 @@ from rich.progress import (
     BarColumn,
     TextColumn,
 )
+from Dataset import TestDataset
+from number_prediction import num_pred
+from utils import prediction_draw
 
 
 def main():
@@ -55,6 +58,13 @@ def main():
         type=str,
         default="save_result",
         help="The directory where the result is saved",
+    )
+    parser.add_argument(
+        "-st",
+        "--score_thre",
+        type=float,
+        default=0.8,
+        help="The score threshold to pick the box when predicting the whole number",
     )
     args = parser.parse_args()
 
@@ -125,8 +135,18 @@ def main():
     with open(os.path.join(args.save_dir, "pred.json"), "w") as f:
         json.dump(predictions, f, indent=4)
 
-    print(f"Inference finished. The result is saved in {args.save_dir} folder")
-
+    num_pred(
+        os.path.join(args.save_dir, "pred.json"),
+        os.path.join(args.save_dir, "pred.csv"),
+        args.score_thre,
+    )
+    prediction_draw(
+        os.path.join(args.save_dir, "pred.json"),
+        args.test_root,
+        args.save_dir,
+        pred_threshold=args.score_thre,
+    )
+    print(f"[green]Inference finished. The result is saved in {args.save_dir} folder")
 
 if __name__ == "__main__":
     main()

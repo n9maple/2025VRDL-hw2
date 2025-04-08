@@ -8,7 +8,7 @@ def main():
         "-b",
         "--box_pred_path",
         type=str,
-        default="data/test",
+        default="result/pred.json",
         help="Path to the box prediction json file",
     )
     parser.add_argument(
@@ -22,7 +22,7 @@ def main():
         "-r",
         "--result_save_path",
         type=str,
-        default="data/test",
+        default="result",
         help="Path to save the images",
     )
     parser.add_argument(

@@ -31,7 +31,7 @@ def main():
         "--score_thre",
         type=float,
         default=0.8,
-        help="The score threshold to pick the box",
+        help="The score threshold to pick the box when predicting the whole number",
     )
     args = parser.parse_args()
 

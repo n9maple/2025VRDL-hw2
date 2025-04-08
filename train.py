@@ -1,6 +1,7 @@
 import torch
 import torchvision
 import argparse
+import numpy as np
 from torch.utils.data import DataLoader
 from torchvision.models.detection.faster_rcnn import (
     FasterRCNN_ResNet50_FPN_V2_Weights,
@@ -151,7 +152,8 @@ def main():
 
     # initialize model
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn_v2(
-        weights=FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT
+        weights=FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT,
+        trainable_backbone_layers=5,
     )
     num_classes = 11
     in_features = model.roi_heads.box_predictor.cls_score.in_features
@@ -173,7 +175,7 @@ def main():
 
     # use partial dataset
     if args.partial_training_data < 1 and args.partial_training_data > 0:
-        subset_size = len(train_dataset) * args.partial_training_data
+        subset_size = int(len(train_dataset) * args.partial_training_data)
         indices = list(range(subset_size))
         train_subset = Subset(train_dataset, indices)
         train_loader = DataLoader(
@@ -193,7 +195,7 @@ def main():
         )
 
     if args.partial_validation_data < 1 and args.partial_validation_data > 0:
-        subset_size = len(valid_dataset) * args.partial_validation_data
+        subset_size = int(len(valid_dataset) * args.partial_validation_data)
         indices = list(range(subset_size))
         valid_subset = Subset(train_dataset, indices)
         valid_loader = DataLoader(
@@ -217,17 +219,25 @@ def main():
         model.parameters(), lr=args.lr, momentum=0.9, weight_decay=1e-4
     )
     os.makedirs(args.save_dir, exist_ok=True)
+    losses = []
+    mAPs = []
     for epoch in range(args.epochs):
-        print(f"\n[red]Epoch \[{epoch+1}/{args.epochs}\][/red]")
+        print(f"\n[yellow2]Epoch \[{epoch+1}/{args.epochs}]")
 
         train_loss = train_one_epoch(model, train_loader, optimizer, args.device)
         mAP = validate(model, valid_loader, args.device)
+        losses.append(train_loss)
+        mAPs.append(mAP)
 
         print(f"Train Loss: {train_loss:.4f} | Validation mAP: {mAP:.4f}")
 
         # save model
         torch.save(model.state_dict(), f"{args.save_dir}/epoch{epoch+1}.pth")
         print(f"save model in {args.save_dir}/epoch{epoch+1}.pth")
+
+    np.save(os.path.join(args.save_dir, "loss.npy"), np.array(losses))
+    np.save(os.path.join(args.save_dir, "mAP.npy"), np.array(mAPs))
+    print(f"\n[green]save loss and mAP numpy file in {args.save_dir} folder")
 
 
 if __name__ == "__main__":

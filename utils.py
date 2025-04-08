@@ -27,7 +27,7 @@ def prediction_draw(
     for box in box_data:
         if box["score"] >= pred_threshold:
             box_dict.setdefault(box["image_id"], []).append(
-                (box["category_id"] - 1, box["bbox"], box["socre"])
+                (box["category_id"] - 1, box["bbox"], box["score"])
             )
 
     if random_select:
@@ -35,33 +35,47 @@ def prediction_draw(
     else:
         sorted_box_dict = dict(sorted(box_dict.items()))
         selected_ids = list(sorted_box_dict.keys())[:10]
+
+    image_size_factor = 3
     for image_id in selected_ids:
-        img = cv2.imread(os.path.join(image_folder_path, image_id + ".png"))
+        img = cv2.imread(os.path.join(image_folder_path, str(image_id) + ".png"))
+        resized_image = cv2.resize(
+            img, None, fx=image_size_factor, fy=image_size_factor
+        )
         for digit, bbox, score in box_dict[image_id]:
-            bbox_int = [int(num) for num in bbox]
+            bbox_int = [int(num * image_size_factor) for num in bbox]
             cv2.rectangle(
-                img,
+                resized_image,
                 (bbox_int[0], bbox_int[1]),
                 (bbox_int[0] + bbox_int[2], bbox_int[1] + bbox_int[3]),
                 (0, 255, 0),
-                2,
-            )
-            cv2.rectangle(
-                img,
-                (bbox_int[0] + 2, bbox_int[1] + 2),
-                (bbox_int[0] + 50, bbox_int[1] + 10),
-                (225, 255, 225),
-                -1,
+                1,
             )
             cv2.putText(
-                img,
-                "label:" + digit + " score:" + score,
-                (bbox_int[0] + 2, bbox_int[1] + bbox_int[3] - 2),
+                resized_image,
+                f"{digit}",
+                (bbox_int[0], bbox_int[1] - 1),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                2,
+                0.45,
                 (0, 255, 0),
-                2,
+                1,
             )
-        cv2.imwrite(os.path.join(result_save_path, image_id + ".png"), img)
+            cv2.putText(
+                resized_image,
+                f"{score:.2f}",
+                (
+                    bbox_int[0]
+                    + cv2.getTextSize(f"{digit}", cv2.FONT_HERSHEY_SIMPLEX, 0.45, 1)[0][0]
+                    + 3,
+                    bbox_int[1] - 1,
+                ),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.45,
+                (255, 0, 0),
+                1,
+            )
+        cv2.imwrite(
+            os.path.join(result_save_path, str(image_id) + ".png"), resized_image
+        )
 
     print(f"The labeled images are saved in {result_save_path}")
