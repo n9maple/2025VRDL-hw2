@@ -33,7 +33,7 @@ def main():
         help="Number of images to be drawn",
     )
     parser.add_argument(
-        "-s",
+        "-rs",
         "--random_select",
         action="store_true",
         help="The drawn image will be selected randomly if set true. Otherwise the first N images will be selected",

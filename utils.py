@@ -54,7 +54,7 @@ def prediction_draw(
             cv2.putText(
                 resized_image,
                 f"{digit}",
-                (bbox_int[0], bbox_int[1] - 1),
+                (bbox_int[0], bbox_int[1] - 3),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.45,
                 (0, 255, 0),
@@ -67,7 +67,7 @@ def prediction_draw(
                     bbox_int[0]
                     + cv2.getTextSize(f"{digit}", cv2.FONT_HERSHEY_SIMPLEX, 0.45, 1)[0][0]
                     + 3,
-                    bbox_int[1] - 1,
+                    bbox_int[1] - 3,
                 ),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.45,
