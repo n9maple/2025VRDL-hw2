@@ -153,7 +153,6 @@ def main():
     # initialize model
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn_v2(
         weights=FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT,
-        trainable_backbone_layers=5,
     )
     num_classes = 11
     in_features = model.roi_heads.box_predictor.cls_score.in_features
@@ -162,15 +161,21 @@ def main():
     model.to(args.device)
 
     # load dataset
+    trans = torchvision.transforms.Compose(
+        [
+            torchvision.transforms.ToTensor(),
+            torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ]
+    )
     train_dataset = TrainDataset(
         args.train_root,
         args.train_annotation,
-        transform=torchvision.transforms.ToTensor(),
+        transform=trans,
     )
     valid_dataset = TrainDataset(
         args.valid_root,
         args.valid_annotation,
-        transform=torchvision.transforms.ToTensor(),
+        transform=trans,
     )
 
     # use partial dataset

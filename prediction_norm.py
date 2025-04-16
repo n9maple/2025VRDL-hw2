@@ -68,9 +68,15 @@ def main():
     )
     args = parser.parse_args()
 
+    trans = torchvision.transforms.Compose(
+        [
+            torchvision.transforms.ToTensor(),
+            torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ]
+    )
     # load dataset
     test_dataset = TestDataset(
-        root=args.test_root, transform=torchvision.transforms.ToTensor()
+        root=args.test_root, transform=trans
     )
     test_loader = DataLoader(
         test_dataset,
