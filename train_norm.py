@@ -164,7 +164,9 @@ def main():
     trans = torchvision.transforms.Compose(
         [
             torchvision.transforms.ToTensor(),
-            torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            torchvision.transforms.Normalize(
+                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+            ),
         ]
     )
     train_dataset = TrainDataset(
@@ -242,7 +244,9 @@ def main():
 
     np.save(os.path.join(args.save_dir, "loss.npy"), np.array(losses))
     np.save(os.path.join(args.save_dir, "mAP.npy"), np.array(mAPs))
-    print(f"\n[green]save loss and mAP numpy file in [yellow2]{args.save_dir} folder[/yellow2]")
+    print(
+        f"\n[green]save loss and mAP numpy file in [yellow2]{args.save_dir} folder[/yellow2]"
+    )
 
 
 if __name__ == "__main__":

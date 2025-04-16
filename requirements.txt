@@ -1,7 +1,7 @@
 numpy==2.2.4
 opencv_python==4.11.0.86
 pandas==2.2.3
-Pillow==11.1.0
+Pillow==11.2.1
 rich==14.0.0
 torch==2.5.1+cu124
 torchmetrics==1.7.0
